@@ -16,7 +16,6 @@ df2=df1.dropna()
 # in the dataset "size" having different type of data which is difficult to predict house price , so we are taking how many bedrooms that are present in "size"
 df2 = df1.dropna().copy()
 df2['BHK'] = df2['size'].apply(lambda x :int(x.split(' ')[0]))
-#pd.set_option("display.max_rows", 100)
 #print(df2.head(100))
 
 def is_float(x):
@@ -40,13 +39,7 @@ def average(x):
 
 df3=df2.copy()
 df3['total_sqft']=df3['total_sqft'].apply(average)
-
 # and here we have clean data
-
-
-
-
-
 
 
 
@@ -171,5 +164,11 @@ price = predict_price('1st Phase JP Nagar', 1000, 2, 2)
 print("Predicted Price (in lakhs):", price)
 
 
-
-
+import pickle
+with open("cleaned_df.pkl", "wb") as f:
+    pickle.dump(df10, f)
+# Keep a copy of location column
+df10['original_location'] = df8['location']  # add back location for visualization
+# Then save pickle
+with open("cleaned_df.pkl", "wb") as f:
+    pickle.dump(df10, f)
