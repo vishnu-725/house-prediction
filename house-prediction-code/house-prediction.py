@@ -42,10 +42,10 @@ df3['total_sqft']=df3['total_sqft'].apply(average)
 # and here we have clean data
 
 
-
 df4=df3.copy()
 df4['price_per_sqt']=(df4['price']*100000) / df4['total_sqft']
 total_locations=df4.groupby('location')['location'].agg('count').sort_values(ascending=False)
+
 
 counts = df4['location'].value_counts()
 df4 = df4[df4['location'].isin(counts[counts >= 10].index)]
@@ -54,6 +54,7 @@ print('len of df4' ,len(df4))
 # usually per 1 bedroom requires 300 sqft but in the dataset some data points that having less that 300 sqft per 1 bedroom , so we have to remove those data
 df5=df4[~(df4.total_sqft/df4.BHK<300)]
 print('len of df5' ,len(df5))
+
 
 def remove_outliers(df):
     df_out=pd.DataFrame()
@@ -65,9 +66,6 @@ def remove_outliers(df):
     return df_out
 df6=remove_outliers(df5)
 print('len of df6',len(df6))
-
-
-
 
 
 def remove_bhk_outliers (df):
@@ -86,6 +84,7 @@ def remove_bhk_outliers (df):
                 exclude_indicies=np.append(exclude_indicies , bhk_df[bhk_df.price_per_sqt<(stats['mean'])].index.values)
     return df.drop(exclude_indicies , axis='index')
 
+
 df7=remove_bhk_outliers(df6)
 print(df7.shape)
 
@@ -93,19 +92,8 @@ print(df7.shape)
 df8=df7[df7.bath<df7.BHK+2]
 print(len(df8))
 
-
-
-
-
-
-
-
-
-
-
 # now we have location data as categorical ml models don't understand categorical data , so we have to convert categorical data into numeric data by using one hotencoder or get_dummies
 categoric_to_numeric=pd.get_dummies(df8.location)
-
 
 # so now we have to concat this data with dataframe
 df9=pd.concat([df8,categoric_to_numeric],axis="columns")
@@ -120,6 +108,7 @@ print(df10.head(2))
 x=df10.drop('price',axis="columns")
 # here y is dependent variable
 y=df10.price
+
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -138,25 +127,20 @@ y_pred = lr.predict(x_test)
 print("R2 Score:", r2_score(y_test, y_pred))
 print("RMSE:", np.sqrt(mean_squared_error(y_test, y_pred)))
 
-
 # 4. Prediction function
 def predict_price(location, sqft, bath, bhk):
     # Create zero vector
     x_pred = np.zeros(len(x.columns))
-
     # Fill numeric features
     x_pred[x.columns.get_loc('total_sqft')] = sqft
     x_pred[x.columns.get_loc('bath')] = bath
     x_pred[x.columns.get_loc('BHK')] = bhk
-
     # Handle location (one-hot encoded)
     if location in x.columns:
         loc_index = x.columns.get_loc(location)
         x_pred[loc_index] = 1
-
     # Convert to DataFrame with same column names as training set
     x_pred_df = pd.DataFrame([x_pred], columns=x.columns)
-
     return lr.predict(x_pred_df)[0]
 
 #predicted price of specific zone with sqft , bedroom & bathrooms
@@ -168,7 +152,8 @@ import pickle
 with open("cleaned_df.pkl", "wb") as f:
     pickle.dump(df10, f)
 # Keep a copy of location column
-df10['original_location'] = df8['location']  # add back location for visualization
+df10['original_location'] = df8['location']# add back location for visualization
 # Then save pickle
 with open("cleaned_df.pkl", "wb") as f:
     pickle.dump(df10, f)
+
